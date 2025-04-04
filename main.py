@@ -23,7 +23,7 @@ def _get_coordinates_by_location(location: str):
         raise HTTPException(status_code=output.status_code, detail="Call to weather geolocation service failed; did you type a valid location name?")
     return output.json()[0]["lon"], output.json()[0]["lat"]
 
-def _get_weather_by_coordinates(lon: float, lat: float):
+def _get_current_weather_by_coordinates(lon: float, lat: float):
     output = requests.get(
     url=f"{BASE_URL}/data/2.5/weather?lon={lon}&lat={lat}&units=metric&appid={API_KEY}"
     )
@@ -31,11 +31,30 @@ def _get_weather_by_coordinates(lon: float, lat: float):
         raise HTTPException(status_code=output.status_code, detail="Call to weather data service failed")
     return output.json()
 
-@app.get("/get_weather_by_coordinates")
-def get_weather_by_coordinates(lon: float = Query(title="longitude"), lat: float = Query(title="latitude")):
-    return _get_weather_by_coordinates(lon, lat)
+def _get_weather_forecast_by_location(lon: float, lat: float):
+    output = requests.get(
+    url=f"{BASE_URL}/data/2.5/forecast?lon={lon}&lat={lat}&units=metric&appid={API_KEY}"
+    )
+    if output.status_code != 200:
+        raise HTTPException(status_code=output.status_code, detail="Call to weather data service failed")
+    return output.json()
 
-@app.get("/get_weather_by_location")
+@app.get("/get_current_weather_by_coordinates")
+def get_weather_by_coordinates(lon: float = Query(title="longitude"), lat: float = Query(title="latitude")):
+    return _get_current_weather_by_coordinates(lon, lat)
+
+@app.get("/get_current_weather_by_location")
 def get_weather_by_location(location: str = Query(title="Geographical location")):
     lon, lat = _get_coordinates_by_location(location)
-    return _get_weather_by_coordinates(lon, lat)
+    return _get_current_weather_by_coordinates(lon, lat)
+
+
+@app.get("/get_weather_forecast_by_coordinates")
+def get_weather_forecast_by_coordinates(lon: float = Query(title="longitude"), lat: float = Query(title="latitude")):
+    return _get_weather_forecast_by_location(lon, lat)
+
+@app.get("/get_weather_forecast_by_location")
+def get_weather_forecast_by_location(location: str = Query(title="Geographical location")):
+    lon, lat = _get_coordinates_by_location(location)
+    return _get_weather_forecast_by_location(lon, lat)
+
