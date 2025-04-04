@@ -45,12 +45,11 @@ def _get_weather_forecast_by_location(lon: float, lat: float, forecast_date_ts: 
         desired_forecast = None
         print(f"forecast_date_ts:{forecast_date_ts}")
         for entry in output.json()["list"]:
-            print(entry["dt"])
-            if entry["dt"] < forecast_date_ts and entry["dt"] + 3*3600 > forecast_date_ts:
+            if entry["dt"] <= forecast_date_ts and entry["dt"] + 3*3600 >= forecast_date_ts:
                 desired_forecast = entry
                 break
         if not desired_forecast:
-            raise HTTPException(status_code=404, detail="Request date in the past or too far in the future")
+            raise HTTPException(status_code=404, detail="Invalid request date: did you type a date in the past or too far in the future?")
         json_output = output.json()
         del json_output["list"]
         json_output["forecast"] = desired_forecast
@@ -79,7 +78,7 @@ def get_weather_forecast_by_coordinates(lon: float = Query(title="longitude"), l
     return _get_weather_forecast_by_location(lon, lat, forecast_date_ts)
 
 @app.get("/get_weather_forecast_by_location")
-def get_weather_forecast_by_location(location: str = Query(title="Geographical location"), forecast_date_string: str | None = Query(default=None, title="Date of the forecast in format YYYY-MM-DD hh:mm:ss", alias="date")):
+def get_weather_forecast_by_location(location: str = Query(title="Geographical location"), forecast_date_string: str | None = Query(default=None, title="Date of the forecast in format YYYY-MM-DD hh:mm:ss utc", alias="date")):
     forecast_date_ts = None
     if forecast_date_string:
         try:
