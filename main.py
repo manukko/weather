@@ -20,7 +20,7 @@ def _get_coordinates_by_location(location: str):
     url=f"{BASE_URL}/geo/1.0/direct?q={location}&limit=5&appid={API_KEY}"
     )
     if output.status_code != 200 or not output.json():
-        raise HTTPException(status_code=output.status_code, detail="call to weather geolocation service failed; did you type a valid location name?")
+        raise HTTPException(status_code=output.status_code, detail="Call to weather geolocation service failed; did you type a valid location name?")
     return output.json()[0]["lon"], output.json()[0]["lat"]
 
 def _get_weather_by_coordinates(lon: float, lat: float):
@@ -28,7 +28,7 @@ def _get_weather_by_coordinates(lon: float, lat: float):
     url=f"{BASE_URL}/data/2.5/weather?lon={lon}&lat={lat}&units=metric&appid={API_KEY}"
     )
     if output.status_code != 200:
-        raise HTTPException(status_code=output.status_code, detail="call to weather data service failed")
+        raise HTTPException(status_code=output.status_code, detail="Call to weather data service failed")
     return output.json()
 
 @app.get("/get_weather_by_coordinates")
